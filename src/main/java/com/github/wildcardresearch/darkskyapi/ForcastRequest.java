@@ -1,14 +1,15 @@
 package com.github.wildcardresearch.darkskyapi;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.wildcardresearch.darkskyapi.exception.ForcastException;
 import com.github.wildcardresearch.darkskyapi.model.ForcastResponse;
+import com.github.wildcardresearch.darkskyapi.client.DarkSkyHttpClient;
 
-import java.io.IOException;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
+
+import static com.github.wildcardresearch.darkskyapi.util.Assert.notNullOrEmpty;
 
 public class ForcastRequest {
 
@@ -18,23 +19,19 @@ public class ForcastRequest {
     private static final String URL = "https://api.darksky.net/forecast/" + KEY_KEY + "/" + LAT_KEY + "," + LON_KEY;
 
     private final String url;
-    private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private ForcastRequest(final String url) {
         this.url = url;
     }
 
-    public ForcastResponse get(double lat, double lon) throws IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(getUri(lat, lon))
-                .GET()
-                .timeout(Duration.ofMinutes(1))
-                .build();
-
-        HttpResponse<String> response = HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-
-        return MAPPER.readValue(response.body(), ForcastResponse.class);
+    public ForcastResponse get(double lat, double lon) {
+        try {
+            HttpResponse<String> httpResponse = DarkSkyHttpClient.get(getUri(lat, lon));
+            return MAPPER.readValue(httpResponse.body(), ForcastResponse.class);
+        } catch (JsonProcessingException ex) {
+            throw new ForcastException("Cannot convert HttpResponse body to ForcastResponse", ex);
+        }
     }
 
     private URI getUri(double lat, double lon) {
@@ -55,6 +52,7 @@ public class ForcastRequest {
         public ForcastRequestBuilder(String apiKey) { apiKey(apiKey); }
 
         public ForcastRequestBuilder apiKey(String apiKey) {
+            notNullOrEmpty(apiKey);
             this.apiKey = apiKey;
             return this;
         }
