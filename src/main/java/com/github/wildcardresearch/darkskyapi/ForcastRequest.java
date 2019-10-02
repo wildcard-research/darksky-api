@@ -8,9 +8,7 @@ import com.github.wildcardresearch.darkskyapi.client.DarkSkyHttpClient;
 
 import java.net.URI;
 import java.net.http.HttpResponse;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.github.wildcardresearch.darkskyapi.util.Assert.notNull;
@@ -61,7 +59,7 @@ public class ForcastRequest {
             HttpResponse<String> httpResponse = DarkSkyHttpClient.get(getUri(lat, lon, time));
             return MAPPER.readValue(httpResponse.body(), ForcastResponse.class);
         } catch (JsonProcessingException ex) {
-            throw new ForcastException("Cannot convert HttpResponse body to ForcastResponse", ex);
+            throw new ForcastException("Cannot convert HttpResponse body to ForcastResponse.", ex);
         }
     }
 
@@ -72,8 +70,8 @@ public class ForcastRequest {
     public static class ForcastRequestBuilder {
 
         private String apiKey;
-        private Set<Block> excludeBlocks;
-        private Boolean extend;
+        private LinkedHashSet<Block> excludeBlocks;
+        private boolean extend = false;
         private Language language;
         private Units units;
 
@@ -85,9 +83,14 @@ public class ForcastRequest {
             return this;
         }
 
-        public ForcastRequestBuilder exclude(Block... blocks){
-            notNull(blocks, "Exclusion blocks cannot be null in ForcastRequestBuilder");
-            this.excludeBlocks = Set.of(blocks);
+        public ForcastRequestBuilder exclude(Block block, Block... blocks){
+            String messageIfNull = "Exclusion blocks cannot be null in ForcastRequestBuilder.";
+            notNull(block, messageIfNull);
+            notNull(blocks, messageIfNull);
+            List<Block> allBlocks = new ArrayList<>(blocks.length + 1);
+            allBlocks.add(block);
+            allBlocks.addAll(Arrays.asList(blocks));
+            this.excludeBlocks = allBlocks.stream().filter(Objects::nonNull).collect(Collectors.toCollection(LinkedHashSet::new));
             return this;
         }
 
@@ -97,13 +100,13 @@ public class ForcastRequest {
         }
 
         public ForcastRequestBuilder lang(Language lang) {
-            notNull(lang, "Language cannot be null in ForcastRequestBuilder");
+            notNull(lang, "Language cannot be null in ForcastRequestBuilder.");
             this.language = lang;
             return this;
         }
 
         public ForcastRequestBuilder units(Units units) {
-            notNull(units, "Units cannot be null in ForcastRequestBuilder");
+            notNull(units, "Units cannot be null in ForcastRequestBuilder.");
             this.units = units;
             return this;
         }

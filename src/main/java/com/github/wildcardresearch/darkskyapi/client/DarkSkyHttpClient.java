@@ -35,7 +35,7 @@ public class DarkSkyHttpClient {
     private static HttpResponse<?> verifyStatus(HttpResponse<?> res) {
         switch(res.statusCode()) {
             case 403:
-                throw new ForcastException("Unauthorized request");
+                throw new ForcastException("Unauthorized request. API Key could be incorrect.");
         }
         return res;
     }
