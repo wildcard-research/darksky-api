@@ -1,5 +1,8 @@
 package com.github.wildcardresearch.darkskyapi.exception;
 
+/**
+ * Custom Runtime Exception.
+ */
 public class ForcastException extends RuntimeException {
     public ForcastException(String message) {
         super(message);

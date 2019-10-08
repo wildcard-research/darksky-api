@@ -14,6 +14,12 @@ import java.util.stream.Collectors;
 import static com.github.wildcardresearch.darkskyapi.util.Assert.notNull;
 import static com.github.wildcardresearch.darkskyapi.util.Assert.notNullOrEmpty;
 
+/**
+ * Class representing a request for the Dark Sky API. Only able to construct a request through the
+ * {@link ForcastRequestBuilder} builder inner class.
+ *
+ * @author Swift
+ */
 public class ForcastRequest {
 
     private static final String KEY_KEY = "#key#";
@@ -22,30 +28,88 @@ public class ForcastRequest {
     private static final String TIME_KEY = "#time#";
     private static final String COMMA_DELIMITER = ",";
     private static final String URL = "https://api.darksky.net/forecast/" + KEY_KEY + "/" + LAT_KEY + COMMA_DELIMITER + LON_KEY + TIME_KEY;
-
-    private final String url;
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
+    private final String url;
+
+    /**
+     * Private constructor only used in the builder.
+     * @param url Overridden url string with all parameters set except lat, lon, and time
+     */
     private ForcastRequest(final String url) {
         this.url = url;
     }
 
-    public ForcastResponse get(double lat, double lon) {
-        return get(String.valueOf(lat), String.valueOf(lon), "");
+    /**
+     * Single HTTP request using a latitude and longitude.
+     * @param lat Latitude in degrees
+     * @param lon Longitude in degrees
+     * @return Response body as String
+     */
+    public String get(double lat, double lon) {
+        return get(String.valueOf(lat), String.valueOf(lon), "").body();
     }
 
-    public ForcastResponse get(double lat, double lon, long time) {
-        return get(String.valueOf(lat), String.valueOf(lon), String.valueOf(time));
+    /**
+     * Single HTTP request using a latitude, longitude, and time.
+     * @param lat Latitude in degrees
+     * @param lon Longitude in degrees
+     * @param time Seconds since midnight GMT on 1 Jan 1970
+     * @return Response body as String
+     */
+    public String get(double lat, double lon, long time) {
+        return get(String.valueOf(lat), String.valueOf(lon), String.valueOf(time)).body();
     }
 
+    /**
+     * Single HTTP request using a latitude and longitude.
+     * @param lat Latitude in degrees
+     * @param lon Longitude in degrees
+     * @return {@link ForcastResponse} for the requested location
+     */
+    public ForcastResponse getAsForcastResponse(double lat, double lon) {
+        return httpResponseToForcastResponse(get(String.valueOf(lat), String.valueOf(lon), ""));
+    }
+
+    /**
+     * Single HTTP request using a latitude, longitude, and time.
+     * @param lat Latitude in degrees
+     * @param lon Longitude in degrees
+     * @param time Seconds since midnight GMT on 1 Jan 1970
+     * @return {@link ForcastResponse} for the requested location at the given time
+     */
+    public ForcastResponse getAsForcastResponse(double lat, double lon, long time) {
+        return httpResponseToForcastResponse(get(String.valueOf(lat), String.valueOf(lon), String.valueOf(time)));
+    }
+
+    /**
+     * Single request URI using a latitude and longitude.
+     * @param lat Latitude in degrees
+     * @param lon Longitude in degrees
+     * @return URI for the request
+     */
     public URI getUri(double lat, double lon){
         return getUri(String.valueOf(lat), String.valueOf(lon), "");
     }
 
+    /**
+     * Single request URI using a latitude and longitude.
+     * @param lat Latitude in degrees
+     * @param lon Longitude in degrees
+     * @param time Seconds since midnight GMT on 1 Jan 1970
+     * @return URI for the request
+     */
     public URI getUri(double lat, double lon, long time){
         return getUri(String.valueOf(lat), String.valueOf(lon), String.valueOf(time));
     }
 
+    /**
+     * Creates URI using the overridden URL from the builder and parameters.
+     * @param lat Latitude in degrees
+     * @param lon Longitude in degrees
+     * @param time Seconds since midnight GMT on 1 Jan 1970
+     * @return URI
+     */
     private URI getUri(String lat, String lon, String time) {
         return URI.create(
                 this.url.replaceAll(LAT_KEY, lat)
@@ -54,19 +118,41 @@ public class ForcastRequest {
         );
     }
 
-    private ForcastResponse get(String lat, String lon, String time) {
+    /**
+     * HTTP GET request using the overridden URL from the builder and parameters.
+     * @param lat Latitude in degrees
+     * @param lon Longitude in degrees
+     * @param time Seconds since midnight GMT on 1 Jan 1970
+     * @return {@link HttpResponse<String>}
+     */
+    private HttpResponse<String> get(String lat, String lon, String time) {
+        return DarkSkyHttpClient.get(getUri(lat, lon, time));
+    }
+
+    /**
+     * Conversion from HttpResponse to {@link ForcastResponse}
+     * @param httpResponse response from Dark Sky API
+     * @return {@link ForcastResponse}
+     */
+    private ForcastResponse httpResponseToForcastResponse(HttpResponse<String> httpResponse) {
         try {
-            HttpResponse<String> httpResponse = DarkSkyHttpClient.get(getUri(lat, lon, time));
             return MAPPER.readValue(httpResponse.body(), ForcastResponse.class);
         } catch (JsonProcessingException ex) {
             throw new ForcastException("Cannot convert HttpResponse body to ForcastResponse.", ex);
         }
     }
 
+    /**
+     * @param apiKey Dark Sky API key for each user
+     * @return {@link ForcastRequestBuilder}
+     */
     public static ForcastRequestBuilder builder(String apiKey) {
         return new ForcastRequestBuilder(apiKey);
     }
 
+    /**
+     * Builder inner class to create a {@link ForcastRequest}
+     */
     public static class ForcastRequestBuilder {
 
         private String apiKey;
@@ -75,14 +161,29 @@ public class ForcastRequest {
         private Language language;
         private Units units;
 
+        /**
+         * Initialize builder with Dark Sky API key.
+         * @param apiKey Dark Sky API key for each user
+         */
         public ForcastRequestBuilder(String apiKey) { apiKey(apiKey); }
 
+        /**
+         * Set request API key.
+         * @param apiKey Dark Sky API key for each user that cannot be empty or null
+         * @return This builder
+         */
         public ForcastRequestBuilder apiKey(String apiKey) {
             notNullOrEmpty(apiKey);
             this.apiKey = apiKey;
             return this;
         }
 
+        /**
+         * Set request exclusion blocks. Parameters can not be null.
+         * @param block {@link Block} to exclude
+         * @param blocks Group of additional {@link Block} values to exclude
+         * @return This builder
+         */
         public ForcastRequestBuilder exclude(Block block, Block... blocks){
             String messageIfNull = "Exclusion blocks cannot be null in ForcastRequestBuilder.";
             notNull(block, messageIfNull);
@@ -94,33 +195,59 @@ public class ForcastRequest {
             return this;
         }
 
+        /**
+         * Set request extend hourly.
+         * @return This builder
+         */
         public ForcastRequestBuilder extendHourly() {
             this.extend = true;
             return this;
         }
 
+        /**
+         * Set request language.
+         * @param lang {@link Language} for response
+         * @return This builder
+         */
         public ForcastRequestBuilder lang(Language lang) {
             notNull(lang, "Language cannot be null in ForcastRequestBuilder.");
             this.language = lang;
             return this;
         }
 
+        /**
+         * Set request units.
+         * @param units {@link Units} for response
+         * @return This builder
+         */
         public ForcastRequestBuilder units(Units units) {
             notNull(units, "Units cannot be null in ForcastRequestBuilder.");
             this.units = units;
             return this;
         }
 
+        /**
+         * Create a request
+         * @return {@link ForcastRequest}
+         */
         public ForcastRequest build() {
             return new ForcastRequest(getUrl());
         }
 
+        /**
+         * Override base URL String with parameters.
+         * @return Overridden URL for request
+         */
         private String getUrl() {
             return URL
                     .replaceAll(KEY_KEY, this.apiKey)
                     + parameters();
         }
 
+        /**
+         * Builder request parameters substring.
+         * @return Parameters for request
+         */
         private String parameters() {
             Collection<String> params = new LinkedList<>();
 
@@ -144,8 +271,132 @@ public class ForcastRequest {
         }
     }
 
+    /**
+     * Data blocks that can be excluded from a {@link ForcastResponse}.
+     */
     public enum Block { currently, minutely, hourly, daily, alerts, flags }
-    public enum Language { ar, az, be, bg, gn, bs, ca, cs, da, de, el, en, eo, es, et, fi, fr, he, hi, hr, hu, id, is, it, ja, ka, kn, ko, kw, lv, ml, mr, nb, nl, no, pa, pl, pt, ro, ru, sk, sl, sr, sv, ta, te, tet, tr, uk, ur,  zh}
-    public enum Units { auto, ca, uk2, us, si }
 
+    /**
+     * Languages for the {@link ForcastResponse}.
+     */
+    public enum Language {
+        // Arabic
+        ar,
+        // Azerbaijani
+        az,
+        // Belarusian
+        be,
+        // Bulgarian
+        bg,
+        // Bengali
+        bn,
+        // Bosnian
+        bs,
+        // Catalan
+        ca,
+        // Czech
+        cs,
+        // Danish
+        da,
+        // German
+        de,
+        // Greek
+        el,
+        // English (which is the default)
+        en,
+        // Esperanto
+        eo,
+        // Spanish
+        es,
+        // Estonian
+        et,
+        // Finnish
+        fi,
+        // French
+        fr,
+        // Hebrew
+        he,
+        // Hindi
+        hi,
+        // Croatian
+        hr,
+        // Hungarian
+        hu,
+        // Indonesian
+        id,
+        // Icelandic
+        is,
+        // Italian
+        it,
+        // Japanese
+        ja,
+        // Georgian
+        ka,
+        // Kannada
+        kn,
+        // Korean
+        ko,
+        // Cornish
+        kw,
+        // Latvian
+        lv,
+        // Malayam
+        ml,
+        // Marathi
+        mr,
+        // Norwegian Bokmal
+        nb,
+        // Dutch
+        nl,
+        // Norwegian Bokmal
+        no,
+        // Punjabi
+        pa,
+        // Polish
+        pl,
+        // Portuguese
+        pt,
+        // Romanian
+        ro,
+        // Russian
+        ru,
+        // Slovak
+        sk,
+        // Slovenian
+        sl,
+        // Serbian
+        sr,
+        // Swedish
+        sv,
+        // Tamil
+        ta,
+        // Telugu
+        te,
+        // Tetum
+        tet,
+        // Turkish
+        tr,
+        // Ukrainian
+        uk,
+        // Urdu
+        ur,
+        // Simplified Chinese
+        zh
+    }
+
+    /**
+     * Requested units for the {@link ForcastResponse}.
+     */
+    public enum Units {
+        // Automatically select units based on geographic location
+        auto,
+        // Same as si, except that windSpeed is in kilometers per hour
+        ca,
+        // Same as si, except that nearestStormDistance and visibility are in miles and windSpeed is in miles per hour
+        uk2,
+        // Imperial units (the default)
+        us,
+        // SI units
+        si
+    }
 }

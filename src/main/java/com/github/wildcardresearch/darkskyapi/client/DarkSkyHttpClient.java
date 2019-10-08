@@ -9,9 +9,17 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
 
+/**
+ * HTTP Client to send requests to the Dark Sky API.
+ */
 public class DarkSkyHttpClient {
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
 
+    /**
+     * GET request that verifies the response.
+     * @param uri URI to use for the GET request
+     * @return {@link HttpResponse<String>} contents are response as a String
+     */
     public static HttpResponse<String> get(URI uri) {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
@@ -24,6 +32,11 @@ public class DarkSkyHttpClient {
         return res;
     }
 
+    /**
+     * Runs GET request and sends response to a String.
+     * @param request {@link HttpRequest}
+     * @return {@link HttpResponse<String>}
+     */
     private static HttpResponse<String> sendToString(HttpRequest request) {
         try {
             return HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
@@ -32,6 +45,11 @@ public class DarkSkyHttpClient {
         }
     }
 
+    /**
+     * Verify HttpResponse.
+     * @param res {@link HttpResponse<?>}
+     * @return {@link HttpResponse<?>} input parameter
+     */
     private static HttpResponse<?> verifyStatus(HttpResponse<?> res) {
         switch(res.statusCode()) {
             case 403:
