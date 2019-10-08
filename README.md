@@ -51,6 +51,9 @@ URI res = request.getUri(40.4637, 3.7492, 255657600);
 System.out.println("We can make a request using " + res.toString());
 ```
 
+### Documentation
+JavaDocs located on [Github](https://wildcard-research.github.io/darksky-api/)
+
 ### Issues
 Report any issues in [Github](https://github.com/wildcard-research/darksky-api/issues).
 
