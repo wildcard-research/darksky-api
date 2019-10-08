@@ -18,7 +18,7 @@ import static com.github.wildcardresearch.darkskyapi.util.Assert.notNullOrEmpty;
  * Class representing a request for the Dark Sky API. Only able to construct a request through the
  * {@link ForcastRequestBuilder} builder inner class.
  *
- * @author Swift
+ * @author Wildcard Research
  */
 public class ForcastRequest {
 

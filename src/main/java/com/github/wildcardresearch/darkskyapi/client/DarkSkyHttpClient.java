@@ -18,7 +18,7 @@ public class DarkSkyHttpClient {
     /**
      * GET request that verifies the response.
      * @param uri URI to use for the GET request
-     * @return {@link HttpResponse<String>} contents are response as a String
+     * @return HttpResponse
      */
     public static HttpResponse<String> get(URI uri) {
         HttpRequest request = HttpRequest.newBuilder()
@@ -35,7 +35,7 @@ public class DarkSkyHttpClient {
     /**
      * Runs GET request and sends response to a String.
      * @param request {@link HttpRequest}
-     * @return {@link HttpResponse<String>}
+     * @return HttpResponse
      */
     private static HttpResponse<String> sendToString(HttpRequest request) {
         try {
@@ -48,7 +48,7 @@ public class DarkSkyHttpClient {
     /**
      * Verify HttpResponse.
      * @param res {@link HttpResponse<?>}
-     * @return {@link HttpResponse<?>} input parameter
+     * @return Input parameter
      */
     private static HttpResponse<?> verifyStatus(HttpResponse<?> res) {
         switch(res.statusCode()) {
