@@ -26,7 +26,7 @@ public class ForcastRequestUriTests {
     public void noTimeExcludeBlock(){
         ForcastRequest request = ForcastRequest
                 .builder("testkey")
-                .exclude(ForcastRequest.Block.flags)
+                .exclude(Block.flags)
                 .build();
         URI uri = request.getUri(1.23, 4.56);
         assertEquals("https://api.darksky.net/forecast/testkey/1.23,4.56?exclude=flags" , uri.toString());
@@ -36,7 +36,7 @@ public class ForcastRequestUriTests {
     public void noTimeExcludeBlocks(){
         ForcastRequest request = ForcastRequest
                 .builder("testkey")
-                .exclude(ForcastRequest.Block.flags, ForcastRequest.Block.alerts)
+                .exclude(Block.flags, Block.alerts)
                 .build();
         URI uri = request.getUri(1.23, 4.56);
         assertEquals("https://api.darksky.net/forecast/testkey/1.23,4.56?exclude=flags,alerts" , uri.toString());
@@ -46,7 +46,7 @@ public class ForcastRequestUriTests {
     public void excludeBlocks(){
         ForcastRequest request = ForcastRequest
                 .builder("testkey")
-                .exclude(ForcastRequest.Block.flags, ForcastRequest.Block.alerts)
+                .exclude(Block.flags, Block.alerts)
                 .build();
         URI uri = request.getUri(1.23, 4.56, 9876);
         assertEquals("https://api.darksky.net/forecast/testkey/1.23,4.56,9876?exclude=flags,alerts" , uri.toString());
@@ -76,7 +76,7 @@ public class ForcastRequestUriTests {
     public void noTimeLang(){
         ForcastRequest request = ForcastRequest
                 .builder("testkey")
-                .lang(ForcastRequest.Language.az)
+                .lang(Language.az)
                 .build();
         URI uri = request.getUri(1.23, 4.56);
         assertEquals("https://api.darksky.net/forecast/testkey/1.23,4.56?lang=az" , uri.toString());
@@ -86,7 +86,7 @@ public class ForcastRequestUriTests {
     public void lang(){
         ForcastRequest request = ForcastRequest
                 .builder("testkey")
-                .lang(ForcastRequest.Language.ro)
+                .lang(Language.ro)
                 .build();
         URI uri = request.getUri(1.23, 4.56, 9876);
         assertEquals("https://api.darksky.net/forecast/testkey/1.23,4.56,9876?lang=ro" , uri.toString());
@@ -96,7 +96,7 @@ public class ForcastRequestUriTests {
     public void noTimeUnits(){
         ForcastRequest request = ForcastRequest
                 .builder("testkey")
-                .units(ForcastRequest.Units.auto)
+                .units(Units.auto)
                 .build();
         URI uri = request.getUri(1.23, 4.56);
         assertEquals("https://api.darksky.net/forecast/testkey/1.23,4.56?units=auto" , uri.toString());
@@ -106,7 +106,7 @@ public class ForcastRequestUriTests {
     public void units(){
         ForcastRequest request = ForcastRequest
                 .builder("testkey")
-                .units(ForcastRequest.Units.uk2)
+                .units(Units.uk2)
                 .build();
         URI uri = request.getUri(1.23, 4.56, 9876);
         assertEquals("https://api.darksky.net/forecast/testkey/1.23,4.56,9876?units=uk2" , uri.toString());
@@ -116,10 +116,10 @@ public class ForcastRequestUriTests {
     public void noTimeAllParams(){
         ForcastRequest request = ForcastRequest
                 .builder("testkey")
-                .exclude(ForcastRequest.Block.alerts, ForcastRequest.Block.hourly)
+                .exclude(Block.alerts, Block.hourly)
                 .extendHourly()
-                .lang(ForcastRequest.Language.bg)
-                .units(ForcastRequest.Units.auto)
+                .lang(Language.bg)
+                .units(Units.auto)
                 .build();
         URI uri = request.getUri(1.23, 4.56);
         assertEquals("https://api.darksky.net/forecast/testkey/1.23,4.56?exclude=alerts,hourly&extend=true&lang=bg&units=auto" , uri.toString());
@@ -129,9 +129,9 @@ public class ForcastRequestUriTests {
     public void allParams(){
         ForcastRequest request = ForcastRequest
                 .builder("testkey")
-                .exclude(ForcastRequest.Block.alerts, ForcastRequest.Block.currently)
-                .lang(ForcastRequest.Language.ca)
-                .units(ForcastRequest.Units.si)
+                .exclude(Block.alerts, Block.currently)
+                .lang(Language.ca)
+                .units(Units.si)
                 .extendHourly()
                 .build();
         URI uri = request.getUri(1.23, 4.56, 9876);
