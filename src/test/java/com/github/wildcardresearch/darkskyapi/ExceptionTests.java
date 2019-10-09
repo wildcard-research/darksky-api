@@ -37,7 +37,7 @@ public class ExceptionTests {
         expectedEx.expect(AssertionError.class);
         expectedEx.expectMessage("Exclusion blocks cannot be null in ForcastRequestBuilder.");
 
-        ForcastRequest.builder("testkey").exclude(ForcastRequest.Block.alerts, null).build();
+        ForcastRequest.builder("testkey").exclude(Block.alerts, null).build();
     }
 
     @Test
